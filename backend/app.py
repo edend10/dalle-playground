@@ -11,6 +11,8 @@ from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
+import glid
+
 app = Flask(__name__)
 CORS(app)
 print("--> Starting DALL-E Server. This might take up to two minutes.")
@@ -34,12 +36,19 @@ def generate_images_api():
     num_images = json_data["num_images"]
     generated_imgs = dalle_model.generate_images(text_prompt, num_images)
 
+    diffused_images = []
+    for img in generated_imgs:
+        results = do_run(init_image=img, text=text_prompt, num_batches=1, batch_size=2, steps=100, skip_rate=0.6)
+        for batch in results:
+            for diffused_img in batch:
+                diffused_images.append(diffused_img)
+
     returned_generated_images = []
     if args.save_to_disk: 
         dir_name = os.path.join(args.output_dir,f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{text_prompt}")
         Path(dir_name).mkdir(parents=True, exist_ok=True)
     
-    for idx, img in enumerate(generated_imgs):
+    for idx, img in enumerate(generated_images + diffused_imgs):
         if args.save_to_disk: 
           img.save(os.path.join(dir_name, f'{idx}.{args.img_format}'), format=args.img_format)
 

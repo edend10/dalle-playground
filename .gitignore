@@ -4,3 +4,7 @@
 /backend/__pycache__
 /interface/node_modules
 /interface/build
+*.swp
+*.jpeg
+*.jpg
+*.pt
