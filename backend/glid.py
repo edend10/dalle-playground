@@ -123,6 +123,7 @@ def load_models(steps=100, skip_rate=0.6):
 def do_run(model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
         init_image: Image, text: str, num_batches: int, batch_size: int = 1):
     # setup
+    CLIP_GUIDANCE = False
     
     device = torch.device(
         'cuda:0' if torch.cuda.is_available() else 'cpu')
