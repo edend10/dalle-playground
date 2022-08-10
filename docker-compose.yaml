@@ -20,6 +20,8 @@ services:
         reservations:
           devices:
             - capabilities: [ gpu ]
+    environment:
+      PYTHONUNBUFFERED: 1
   dalle-interface:
     container_name: dalle-interface
     build:

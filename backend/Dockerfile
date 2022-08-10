@@ -53,4 +53,4 @@ RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
 COPY . /app
 
 # run server
-CMD python3 app.py --port 8080 --model_version mini
+CMD python3 app.py --port 8080 --model_version mini 2>&1 | tee logs.txt

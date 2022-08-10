@@ -1,3 +1,5 @@
+print("--> Starting DALL-E Script")
+
 import argparse
 import base64
 import os
@@ -39,7 +41,7 @@ def generate_images_api():
     diffused_images = []
     for img in generated_imgs:
         results = glid.do_run(model, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
-                init_image=img, text=text_prompt, num_batches=1, batch_size=2, steps=100, skip_rate=0.6)
+                init_image=img, text=text_prompt, num_batches=1, batch_size=2)
         for batch in results:
             for diffused_img in batch:
                 diffused_images.append(diffused_img)
@@ -71,14 +73,18 @@ def health_check():
     return jsonify(success=True)
 
 with app.app_context():
+    print(f"--> Loading model - DALL-E {args.model_version}")
     dalle_model = DalleModel(args.model_version)
     dalle_model.generate_images("warm-up", 1)
-    print(f"--> Model selected - DALL-E {args.model_version}")
+    print(f"--> Model loaded - DALL-E {args.model_version}")
     
+    print(f"--> Loading models - glid")
     model, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_models(steps=100, skip_rate=0.6)
+    print(f"--> Models loaded - glid")
     
     print("--> DALL-E Server is up and running!")
 
 
 if __name__ == "__main__":
+    print("flask main")
     app.run(host="0.0.0.0", port=args.port, debug=False)

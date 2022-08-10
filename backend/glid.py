@@ -124,8 +124,6 @@ def do_run(model, model_params, ldm, bert, clip_model, normalize, skip_timesteps
         init_image: Image, text: str, num_batches: int, batch_size: int = 1):
     # setup
     
-    skip_timesteps = int(steps * skip_rate)
-
     device = torch.device(
         'cuda:0' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
