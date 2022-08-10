@@ -36,10 +36,10 @@ def generate_images_api():
     json_data = request.get_json(force=True)
     text_prompt = json_data["text"]
     num_images = json_data["num_images"]
-    generated_imgs = dalle_model.generate_images(text_prompt, num_images)
+    generated_images = dalle_model.generate_images(text_prompt, num_images)
 
     diffused_images = []
-    for img in generated_imgs:
+    for img in generated_images:
         results = glid.do_run(model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
                 init_image=img, text=text_prompt, num_batches=1, batch_size=2)
         for batch in results:
