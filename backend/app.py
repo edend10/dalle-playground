@@ -40,7 +40,7 @@ def generate_images_api():
 
     diffused_images = []
     for img in generated_imgs:
-        results = glid.do_run(model, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
+        results = glid.do_run(model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
                 init_image=img, text=text_prompt, num_batches=1, batch_size=2)
         for batch in results:
             for diffused_img in batch:
@@ -79,7 +79,7 @@ with app.app_context():
     print(f"--> Model loaded - DALL-E {args.model_version}")
     
     print(f"--> Loading models - glid")
-    model, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_models(steps=100, skip_rate=0.6)
+    model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_models(steps=100, skip_rate=0.6)
     print(f"--> Models loaded - glid")
     
     print("--> DALL-E Server is up and running!")
