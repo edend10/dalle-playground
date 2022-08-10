@@ -34,10 +34,6 @@ COPY ./environment.yaml /app/environment.yaml
 RUN conda env create -f environment.yaml
 SHELL ["conda", "run", "-n", "ldm", "/bin/bash", "-c"]
 
-RUN wget https://dall-3.com/models/glid-3-xl/bert.pt \
-    && wget https://dall-3.com/models/glid-3-xl/kl-f8.pt \
-    && wget https://dall-3.com/models/glid-3-xl/finetune.pt
-
 # add requirements
 COPY ./requirements.txt /app/requirements.txt
 
@@ -46,6 +42,12 @@ RUN pip3 install -r requirements.txt
 
 # install jax[cuda]
 RUN pip3 install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+RUN mkdir -p glid_models
+
+RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
+    && wget https://dall-3.com/models/glid-3-xl/kl-f8.pt -O glid_models/kl-f8.pt \
+    && wget https://dall-3.com/models/glid-3-xl/finetune.pt -O glid_models/finetune.pt
 
 # add source code
 COPY . /app

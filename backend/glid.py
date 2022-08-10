@@ -48,10 +48,10 @@ class MakeCutouts(nn.Module):
 def load_models(steps=100, skip_rate=0.6):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    glid3xl_model_dir = "."
+    glid3xl_model_dir = "glid_models"
     MODEL_PATH = os.path.join(glid3xl_model_dir, "finetune.pt")
     KL_PATH = os.path.join(glid3xl_model_dir, "kl-f8.pt")
-    BERT_PATH = os.path.join(glid5xl_model_dir, "bert.pt")
+    BERT_PATH = os.path.join(glid3xl_model_dir, "bert.pt")
     
     model_state_dict = torch.load(MODEL_PATH, map_location='cpu')
     

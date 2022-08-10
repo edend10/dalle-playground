@@ -75,7 +75,7 @@ with app.app_context():
     dalle_model.generate_images("warm-up", 1)
     print(f"--> Model selected - DALL-E {args.model_version}")
     
-    model, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_model(steps=100, skip_rate=0.6)
+    model, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_models(steps=100, skip_rate=0.6)
     
     print("--> DALL-E Server is up and running!")
 
