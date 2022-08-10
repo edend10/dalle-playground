@@ -45,22 +45,16 @@ class MakeCutouts(nn.Module):
             cutouts.append(F.adaptive_avg_pool2d(cutout, self.cut_size))
         return torch.cat(cutouts)
 
+def load_models(steps=100, skip_rate=0.6):
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-def do_run(init_image: Image, text: str, num_batches: int, batch_size: int = 1, steps: int = 100, skip_rate: float = 0.6):
-    # download files
     glid3xl_model_dir = "."
     MODEL_PATH = os.path.join(glid3xl_model_dir, "finetune.pt")
     KL_PATH = os.path.join(glid3xl_model_dir, "kl-f8.pt")
-    BERT_PATH = os.path.join(glid3xl_model_dir, "bert.pt")
-
-    # setup
-
-    device = torch.device(
-        'cuda:0' if torch.cuda.is_available() else 'cpu')
-    print('Using device:', device)
-
+    BERT_PATH = os.path.join(glid5xl_model_dir, "bert.pt")
+    
     model_state_dict = torch.load(MODEL_PATH, map_location='cpu')
-
+    
     skip_timesteps = int(steps * skip_rate)
     model_params = {
         'attention_resolutions': '32,16,8',
@@ -118,10 +112,23 @@ def do_run(init_image: Image, text: str, num_batches: int, batch_size: int = 1, 
 
     # clip
     clip_model, clip_preprocess = clip.load('ViT-L/14', device=device, jit=False)
-    #clip_model, clip_preprocess = clip.load(clip_model_file, device=device, jit=False)
     clip_model.eval().requires_grad_(False)
+    
     normalize = transforms.Normalize(mean=[0.48145466, 0.4578275, 0.40821073],
                                      std=[0.26862954, 0.26130258, 0.27577711])
+
+    return model, model_params, ldm, bert, clip_model, normalize, skip_timesteps
+
+
+def do_run(model, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
+        init_image: Image, text: str, num_batches: int, batch_size: int = 1):
+    # setup
+    
+    skip_timesteps = int(steps * skip_rate)
+
+    device = torch.device(
+        'cuda:0' if torch.cuda.is_available() else 'cpu')
+    print('Using device:', device)
 
     # per-run stuff:
 

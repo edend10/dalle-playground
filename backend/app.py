@@ -38,7 +38,8 @@ def generate_images_api():
 
     diffused_images = []
     for img in generated_imgs:
-        results = do_run(init_image=img, text=text_prompt, num_batches=1, batch_size=2, steps=100, skip_rate=0.6)
+        results = glid.do_run(model, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
+                init_image=img, text=text_prompt, num_batches=1, batch_size=2, steps=100, skip_rate=0.6)
         for batch in results:
             for diffused_img in batch:
                 diffused_images.append(diffused_img)
@@ -69,12 +70,14 @@ def generate_images_api():
 def health_check():
     return jsonify(success=True)
 
-
 with app.app_context():
     dalle_model = DalleModel(args.model_version)
     dalle_model.generate_images("warm-up", 1)
-    print("--> DALL-E Server is up and running!")
     print(f"--> Model selected - DALL-E {args.model_version}")
+    
+    model, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_model(steps=100, skip_rate=0.6)
+    
+    print("--> DALL-E Server is up and running!")
 
 
 if __name__ == "__main__":
