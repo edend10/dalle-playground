@@ -51,7 +51,7 @@ def generate_images_api():
         dir_name = os.path.join(args.output_dir,f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{text_prompt}")
         Path(dir_name).mkdir(parents=True, exist_ok=True)
     
-    for idx, img in enumerate(generated_images + diffused_imgs):
+    for idx, img in enumerate(generated_images + diffused_images):
         if args.save_to_disk: 
           img.save(os.path.join(dir_name, f'{idx}.{args.img_format}'), format=args.img_format)
 
