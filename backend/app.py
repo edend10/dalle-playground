@@ -14,6 +14,7 @@ from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
 import glid
+import swinir
 
 app = Flask(__name__)
 CORS(app)
@@ -40,18 +41,24 @@ def generate_images_api():
 
     diffused_images = []
     for img in generated_images:
-        results = glid.do_run(model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
-                init_image=img, text=text_prompt, num_batches=1, batch_size=2)
+        results = glid.do_run(*glid_params, init_image=img, text=text_prompt, num_batches=1, batch_size=1)
         for batch in results:
             for diffused_img in batch:
                 diffused_images.append(diffused_img)
+
+    upscaled_images = []
+    for img in diffused_images:
+        upscaled_img = swinir.do_run(swinir_model, img)
+        
+        upscaled_images.append(upscaled_img)
+        
 
     returned_generated_images = []
     if args.save_to_disk: 
         dir_name = os.path.join(args.output_dir,f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{text_prompt}")
         Path(dir_name).mkdir(parents=True, exist_ok=True)
     
-    for idx, img in enumerate(generated_images + diffused_images):
+    for idx, img in enumerate(generated_images + diffused_images + upscaled_images):
         if args.save_to_disk: 
           img.save(os.path.join(dir_name, f'{idx}.{args.img_format}'), format=args.img_format)
 
@@ -79,8 +86,12 @@ with app.app_context():
     print(f"--> Model loaded - DALL-E {args.model_version}")
     
     print(f"--> Loading models - glid")
-    model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps = glid.load_models(steps=100, skip_rate=0.6)
+    glid_params = glid.load_models(steps=100, skip_rate=0.6)
     print(f"--> Models loaded - glid")
+    
+    print(f"--> Loading model - swinir")
+    swinir_model = swinir.load_model()
+    print(f"--> Model loaded - swinir")
     
     print("--> DALL-E Server is up and running!")
 

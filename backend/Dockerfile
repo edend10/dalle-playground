@@ -43,11 +43,18 @@ RUN pip3 install -r requirements.txt
 # install jax[cuda]
 RUN pip3 install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
+# glid-3-xl models
 RUN mkdir -p glid_models
 
 RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
     && wget https://dall-3.com/models/glid-3-xl/kl-f8.pt -O glid_models/kl-f8.pt \
     && wget https://dall-3.com/models/glid-3-xl/finetune.pt -O glid_models/finetune.pt
+
+# SwinIR model
+RUN mkdir -p swinir_model
+
+#RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/001_classicalSR_DIV2K_s48w8_SwinIR-M_x8.pth -O swinir_model/swinir.pth
+RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/001_classicalSR_DF2K_s64w8_SwinIR-M_x8.pth -O swinir_model/swinir.pth
 
 # add source code
 COPY . /app

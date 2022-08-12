@@ -117,7 +117,7 @@ def load_models(steps=100, skip_rate=0.6):
     normalize = transforms.Normalize(mean=[0.48145466, 0.4578275, 0.40821073],
                                      std=[0.26862954, 0.26130258, 0.27577711])
 
-    return model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps
+    return [model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps]
 
 
 def do_run(model, diffusion, model_params, ldm, bert, clip_model, normalize, skip_timesteps,
