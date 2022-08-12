@@ -30,13 +30,13 @@ def define_model(model_path, is_real_sr=False):
     return model
 
 
-def load_model():
+def load_model(is_real_sr=False):
 	# TASK = "real_sr"
 	MODEL_PATH = "swinir_model/swinir.pth"
 
 	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 	# set up model
-	model = define_model(MODEL_PATH)
+	model = define_model(MODEL_PATH, is_real_sr=is_real_sr)
 	model.eval()
 	model = model.to(device)
 	
@@ -76,10 +76,8 @@ def do_run(model, input_image, is_real_sr=False):
         output = output[..., :h_old * scale, :w_old * scale]
 
     def prepare_sample(image):
-        print("11", image.shape)
         im = image.unsqueeze(0)
-        print("22", image.shape)
-        return TF.to_pil_image(out.squeeze().float().cpu().clamp(0, 1))
+        return TF.to_pil_image(im.squeeze().float().cpu().clamp(0, 1))
 
 #    output = output.data.squeeze().float().cpu().clamp_(0, 1).numpy()
 #    if output.ndim == 3:

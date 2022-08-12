@@ -48,7 +48,7 @@ def generate_images_api():
 
     upscaled_images = []
     for img in diffused_images:
-        upscaled_img = swinir.do_run(swinir_model, img)
+        upscaled_img = swinir.do_run(swinir_model, img, is_real_sr=True)
         
         upscaled_images.append(upscaled_img)
         
@@ -90,7 +90,7 @@ with app.app_context():
     print(f"--> Models loaded - glid")
     
     print(f"--> Loading model - swinir")
-    swinir_model = swinir.load_model()
+    swinir_model = swinir.load_model(is_real_sr=True)
     print(f"--> Model loaded - swinir")
     
     print("--> DALL-E Server is up and running!")
