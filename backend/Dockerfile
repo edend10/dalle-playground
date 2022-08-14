@@ -59,8 +59,12 @@ RUN mkdir -p swinir_model
 #RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/001_classicalSR_DF2K_s64w8_SwinIR-M_x8.pth -O swinir_model/swinir.pth
 RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth -O swinir_model/swinir.pth
 
+RUN pip install gunicorn
+
 # add source code
 COPY . /app
+
+# Model specific config
 RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
 
 # run server
@@ -68,7 +72,9 @@ RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
 #CMD python3 app.py 2>&1 | tee logs.txt
 
 ## prod
-RUN pip install gunicorn
-RUN gunicorn -w 4 'app:app'
+#CMD gunicorn 'app:app' --config gunicorn_config.py 2>&1 | tee logs.txt
 
-RUN if [ "$SERVER_ENV" = "prod" ]; then pip install gunicorn && gunicorn 'app:app' --gunicorn_config.py 2>&1 | tee logs.txt; else python3 app.py 2>&1 | tee logs.txt
+## conditional
+#CMD if [[ "$SERVER_ENV" = "prod" ]]; then gunicorn 'app:app' --config gunicorn_config.py 2>&1 | tee logs.txt; else python3 app.py 2>&1 | tee logs.txt; fi
+ENV SERVER_ENV ${SERVER_ENV}
+CMD ./run_server.sh ${SERVER_ENV} 2>&1 | tee logs.txt

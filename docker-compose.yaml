@@ -12,7 +12,7 @@ services:
       dockerfile: Dockerfile
       args:
         DALLE_SIZE: mini
-        SERVER_ENV: dev
+        SERVER_ENV: prod
     restart: always
     ports:
       - 8080:8080
