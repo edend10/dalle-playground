@@ -1,4 +1,5 @@
 import os
+import uuid
 import random
 from functools import partial
 
@@ -19,8 +20,9 @@ import wandb
 from consts import COND_SCALE, DALLE_COMMIT_ID, DALLE_MODEL_MEGA_FULL, DALLE_MODEL_MEGA, DALLE_MODEL_MINI, GEN_TOP_K, GEN_TOP_P, TEMPERATURE, VQGAN_COMMIT_ID, VQGAN_REPO, ModelSize
 
 os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform" # https://github.com/saharmor/dalle-playground/issues/14#issuecomment-1147849318
-os.environ["WANDB_SILENT"] = "true"
-wandb.init(anonymous="must")
+## moved to model init for now
+#os.environ["WANDB_SILENT"] = "true"
+#wandb.init(anonymous="must", id=f"{str(uuid.uuid4())}_{os.getpid()}")
 
 # model inference
 @partial(jax.pmap, axis_name="batch", static_broadcasted_argnums=(3, 4, 5, 6, 7))
@@ -46,6 +48,11 @@ def p_decode(vqgan, indices, params):
 
 class DalleModel:
     def __init__(self, model_version: ModelSize) -> None:
+        os.environ["WANDB_SILENT"] = "true"
+        wandb_experiment_id = f"{str(uuid.uuid4())}_{os.getpid()}"
+        print(f"wandb experiment id: {wandb_experiment_id}")
+        wandb.init(anonymous="must", id=wandb_experiment_id, name=wandb_experiment_id)
+        
         if model_version == ModelSize.MEGA_FULL:
             dalle_model = DALLE_MODEL_MEGA_FULL
             dtype = jnp.float16

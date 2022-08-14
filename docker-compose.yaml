@@ -35,3 +35,22 @@ services:
       - 3000:3000
     stdin_open: true
     tty: true
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile_celery
+      args:
+        DALLE_SIZE: mini
+    container_name: celery-worker
+    volumes:
+      - .:/usr/src/app
+    environment:
+      - FLASK_DEBUG=1
+      - APP_SETTINGS=celery.config.DevelopmentConfig
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+  redis:
+    container_name: redis
+    image: redis:6-alpine

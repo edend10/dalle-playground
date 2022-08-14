@@ -14,6 +14,7 @@ from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
+from celery.tasks import create_task
 import glid
 import swinir
 
@@ -50,28 +51,32 @@ def generate_images_api():
     json_data = request.get_json(force=True)
     text_prompt = json_data["text"]
     num_images = json_data["num_images"]
-    generated_images = dalle_model.generate_images(text_prompt, num_images)
+#    generated_images = dalle_model.generate_images(text_prompt, num_images)
+#
+#    diffused_images = []
+#    for img in generated_images:
+#        results = glid.do_run(*glid_params, init_image=img, text=text_prompt, num_batches=1, batch_size=1)
+#        for batch in results:
+#            for diffused_img in batch:
+#                diffused_images.append(diffused_img)
+#
+#    upscaled_images = []
+#    for img in diffused_images:
+#        upscaled_img = swinir.do_run(swinir_model, img, is_real_sr=True)
+#        
+#        upscaled_images.append(upscaled_img)
+# 	 generated_images = generated_images + diffused_images + upscaled_images
+#        
 
-    diffused_images = []
-    for img in generated_images:
-        results = glid.do_run(*glid_params, init_image=img, text=text_prompt, num_batches=1, batch_size=1)
-        for batch in results:
-            for diffused_img in batch:
-                diffused_images.append(diffused_img)
-
-    upscaled_images = []
-    for img in diffused_images:
-        upscaled_img = swinir.do_run(swinir_model, img, is_real_sr=True)
-        
-        upscaled_images.append(upscaled_img)
-        
+	create_task(text_prompt, num_images)
+	generated_images = []	
 
     returned_generated_images = []
     if save_to_disk: 
         dir_name = os.path.join(output_dir,f"{time.strftime('%Y-%m-%d_%H-%M-%S')}_{text_prompt}")
         Path(dir_name).mkdir(parents=True, exist_ok=True)
     
-    for idx, img in enumerate(generated_images + diffused_images + upscaled_images):
+    for idx, img in enumerate(generated_images):
         if save_to_disk: 
           img.save(os.path.join(dir_name, f'{idx}.{img_format}'), format=img_format)
 
@@ -92,21 +97,21 @@ def generate_images_api():
 def health_check():
     return jsonify(success=True)
 
-with app.app_context():
-    print(f"--> Loading model - DALL-E {model_version}")
-    dalle_model = DalleModel(model_version)
-    dalle_model.generate_images("warm-up", 1)
-    print(f"--> Model loaded - DALL-E {model_version}")
-    
-    print(f"--> Loading models - glid")
-    glid_params = glid.load_models(steps=100, skip_rate=0.6)
-    print(f"--> Models loaded - glid")
-    
-    print(f"--> Loading model - swinir")
-    swinir_model = swinir.load_model(is_real_sr=True)
-    print(f"--> Model loaded - swinir")
-    
-    print("--> DALL-E Server is up and running!")
+#with app.app_context():
+#    print(f"--> Loading model - DALL-E {model_version}")
+#    dalle_model = DalleModel(model_version)
+#    dalle_model.generate_images("warm-up", 1)
+#    print(f"--> Model loaded - DALL-E {model_version}")
+#    
+#    print(f"--> Loading models - glid")
+#    glid_params = glid.load_models(steps=100, skip_rate=0.6)
+#    print(f"--> Models loaded - glid")
+#    
+#    print(f"--> Loading model - swinir")
+#    swinir_model = swinir.load_model(is_real_sr=True)
+#    print(f"--> Model loaded - swinir")
+#    
+#    print("--> DALL-E Server is up and running!")
 
 
 if __name__ == "__main__":
