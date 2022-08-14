@@ -1,5 +1,8 @@
 FROM nvidia/cuda:11.4.3-cudnn8-devel-ubuntu20.04
 
+ARG DALLE_SIZE=mini
+ARG SERVER_ENV=dev
+
 # expose
 EXPOSE 8080
 
@@ -58,6 +61,14 @@ RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realS
 
 # add source code
 COPY . /app
+RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
 
 # run server
-CMD python3 app.py --port 8080 --model_version mini 2>&1 | tee logs.txt
+## dev
+#CMD python3 app.py 2>&1 | tee logs.txt
+
+## prod
+RUN pip install gunicorn
+RUN gunicorn -w 4 'app:app'
+
+RUN if [ "$SERVER_ENV" = "prod" ]; then pip install gunicorn && gunicorn 'app:app' --gunicorn_config.py 2>&1 | tee logs.txt; else python3 app.py 2>&1 | tee logs.txt

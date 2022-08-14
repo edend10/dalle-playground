@@ -1,0 +1,4 @@
+port: 8080
+img_format: JPEG
+save_to_disk: False
+output_dir: /tmp

@@ -10,6 +10,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        DALLE_SIZE: mini
+        SERVER_ENV: dev
     restart: always
     ports:
       - 8080:8080

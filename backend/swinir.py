@@ -76,8 +76,9 @@ def do_run(model, input_image, is_real_sr=False):
         output = output[..., :h_old * scale, :w_old * scale]
 
     def prepare_sample(image):
-        im = image.unsqueeze(0)
-        return TF.to_pil_image(im.squeeze().float().cpu().clamp(0, 1))
+        image = image.squeeze().float().cpu().clamp(0, 1)
+        image = image[[2, 1, 0], :, :]
+        return TF.to_pil_image(image)
 
 #    output = output.data.squeeze().float().cpu().clamp_(0, 1).numpy()
 #    if output.ndim == 3:
