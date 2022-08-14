@@ -3,6 +3,8 @@ FROM nvidia/cuda:11.4.3-cudnn8-devel-ubuntu20.04
 ARG DALLE_SIZE=mini
 ARG SERVER_ENV=dev
 
+ENV SERVER_ENV ${SERVER_ENV}
+
 # expose
 EXPOSE 8080
 
@@ -68,13 +70,4 @@ COPY . /app
 RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
 
 # run server
-## dev
-#CMD python3 app.py 2>&1 | tee logs.txt
-
-## prod
-#CMD gunicorn 'app:app' --config gunicorn_config.py 2>&1 | tee logs.txt
-
-## conditional
-#CMD if [[ "$SERVER_ENV" = "prod" ]]; then gunicorn 'app:app' --config gunicorn_config.py 2>&1 | tee logs.txt; else python3 app.py 2>&1 | tee logs.txt; fi
-ENV SERVER_ENV ${SERVER_ENV}
 CMD ./run_server.sh ${SERVER_ENV} 2>&1 | tee logs.txt

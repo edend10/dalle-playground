@@ -14,7 +14,7 @@ from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
-from celery.tasks import create_task
+from celery_tasks_dalle import create_task
 import glid
 import swinir
 
@@ -68,8 +68,8 @@ def generate_images_api():
 # 	 generated_images = generated_images + diffused_images + upscaled_images
 #        
 
-	create_task(text_prompt, num_images)
-	generated_images = []	
+    create_task(text_prompt, num_images)
+    generated_images = []	
 
     returned_generated_images = []
     if save_to_disk: 

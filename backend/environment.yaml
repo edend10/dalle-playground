@@ -28,3 +28,5 @@ dependencies:
     - -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
     - -e git+https://github.com/openai/CLIP.git@main#egg=clip
     - dalle-pytorch==1.6.4
+    - celery==5.2.3
+    - redis==4.1.4
