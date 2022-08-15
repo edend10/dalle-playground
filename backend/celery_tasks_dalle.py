@@ -5,7 +5,7 @@ import time
 import yaml
 
 from celery import Celery
-from celery.signals import worker_process_init
+from celery.signals import worker_init
 
 from dalle_model import DalleModel
 
@@ -28,17 +28,15 @@ def load_dalle_model(model_version):
     print("--> Generating warmup images for DALL-E")
     dalle_model.generate_images("warm-up", 1)
 
-dalle_model = load_dalle_model(model_config["model_version"])
-
-#@worker_process_init.connect()
-#def on_worker_init(**_):
-#    global dalle_model
-#    dalle_model = load_dalle_model(model_config["model_version"])
+@worker_init.connect()
+def on_worker_init(**_):
+    global dalle_model
+    dalle_model = load_dalle_model(model_config["model_version"])
 
 ## TODO: load model and predict
 ## example: https://stackoverflow.com/questions/52098967/python-redis-queue-rq-how-to-avoid-preloading-ml-model-for-each-job
 @celery.task(name="create_dalle_task")
-def create_task(prompt, num_images):
+def create_dalle_task(prompt, num_images):
     print(f"Predicting DALL-E for prompt: '{prompt}'")
 
     return True

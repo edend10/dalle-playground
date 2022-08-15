@@ -14,9 +14,10 @@ from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
-import celery
+from celery import Celery
+app = Celery('redis://redis:6379/0') ## TODO: parameterize
 
-#from celery_tasks_dalle import create_task
+#from celery_tasks_dalle import create_dalle_task
 #import glid
 #import swinir
 
@@ -71,7 +72,7 @@ def generate_images_api():
 #        
 
     #create_task.delay(text_prompt, num_images)
-    celery.send_task('tasks.create_task', (text_prompt, num_images))
+    celery.send_task("tasks.create_dalle_task", (text_prompt, num_images))
 
     generated_images = []	
 
