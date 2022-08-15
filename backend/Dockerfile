@@ -67,7 +67,7 @@ SHELL ["conda", "run", "-n", "llama_flask", "/bin/bash", "-c"]
 COPY . /app
 
 # Model specific config
-RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
+# RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
 
 # run server
 CMD ./run_server.sh ${SERVER_ENV} 2>&1 | tee logs.txt

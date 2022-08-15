@@ -14,7 +14,9 @@ from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
-from celery_tasks_dalle import create_task
+import celery
+
+#from celery_tasks_dalle import create_task
 #import glid
 #import swinir
 
@@ -40,9 +42,9 @@ with open("app_config.yaml") as yamlfile:
     img_format = app_config["img_format"]
     output_dir = app_config["output_dir"]
 
-with open("model_config.yaml") as yamlfile:
-    model_config = yaml.load(yamlfile, Loader=yaml.FullLoader)
-    model_version = model_config["model_version"]
+#with open("model_config.yaml") as yamlfile:
+#    model_config = yaml.load(yamlfile, Loader=yaml.FullLoader)
+#    model_version = model_config["model_version"]
 
 
 @app.route("/dalle", methods=["POST"])
@@ -68,7 +70,9 @@ def generate_images_api():
 # 	 generated_images = generated_images + diffused_images + upscaled_images
 #        
 
-    create_task.delay(text_prompt, num_images)
+    #create_task.delay(text_prompt, num_images)
+    celery.send_task('tasks.create_task', (text_prompt, num_images))
+
     generated_images = []	
 
     returned_generated_images = []

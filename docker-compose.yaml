@@ -29,6 +29,8 @@ services:
       - APP_SETTINGS=celery.config.DevelopmentConfig
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - worker
   dalle-interface:
     container_name: dalle-interface
     build:
