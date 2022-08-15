@@ -18,11 +18,6 @@ services:
       - 8080:8080
     volumes:
       - app-cache:/root/.cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [ gpu ]
     environment:
       - PYTHONUNBUFFERED=1
       - FLASK_DEBUG=1
@@ -50,11 +45,17 @@ services:
     container_name: celery-worker
     volumes:
       - .:/usr/src/app
+      - app-cache:/root/.cache
     environment:
       - FLASK_DEBUG=1
       - APP_SETTINGS=celery.config.DevelopmentConfig
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [ gpu ]
     depends_on:
       - redis
   redis:

@@ -24,8 +24,9 @@ dalle_model = None
 def load_dalle_model(model_version):
     print(f"--> Loading model - DALL-E {model_version}")
     dalle_model = DalleModel(model_version)
-    dalle_model.generate_images("warm-up", 1)
     print(f"--> Model loaded - DALL-E {model_version}")
+    print("--> Generating warmup images for DALL-E")
+    dalle_model.generate_images("warm-up", 1)
 
 dalle_model = load_dalle_model(model_config["model_version"])
 
