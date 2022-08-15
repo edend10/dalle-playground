@@ -16,5 +16,7 @@ celery.conf.result_backend = os.environ.get("CELERY_RESULT_BACKEND", "redis://lo
 def create_task(prompt, num_images):
     print(f"Predicting DALL-E for prompt: '{prompt}'")
 
+    with open(f"{prompt}.txt", "w") as f:
+        f.write(prompt)
 
     return True

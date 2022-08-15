@@ -15,15 +15,15 @@ from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
 
 from celery_tasks_dalle import create_task
-import glid
-import swinir
+#import glid
+#import swinir
 
 app = Flask(__name__)
 CORS(app)
 print("--> Starting DALL-E Server. This might take up to two minutes.")
 
-from dalle_model import DalleModel
-dalle_model = None
+#from dalle_model import DalleModel
+#dalle_model = None
 
 #parser = argparse.ArgumentParser(description = "A DALL-E app to turn your textual prompts into visionary delights")
 #parser.add_argument("--port", type=int, default=8000, help = "backend port")
@@ -68,7 +68,7 @@ def generate_images_api():
 # 	 generated_images = generated_images + diffused_images + upscaled_images
 #        
 
-    create_task(text_prompt, num_images)
+    create_task.delay(text_prompt, num_images)
     generated_images = []	
 
     returned_generated_images = []

@@ -28,16 +28,16 @@ RUN wget \
 
 RUN conda --version
 
-COPY ./environment.yaml /app/environment.yaml
+COPY ./environment_dalle.yaml /app/environment_dalle.yaml
 
-RUN conda env create -f environment.yaml
-SHELL ["conda", "run", "-n", "ldm", "/bin/bash", "-c"]
+RUN conda env create -f environment_dalle.yaml
+SHELL ["conda", "run", "-n", "llama_dalle", "/bin/bash", "-c"]
 
 # add requirements
-COPY ./requirements.txt /app/requirements.txt
+#COPY ./requirements.txt /app/requirements.txt
 
 # install requirements
-RUN pip3 install -r requirements.txt
+#RUN pip3 install -r requirements.txt
 
 # install jax[cuda]
 RUN pip3 install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html

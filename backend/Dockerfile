@@ -34,34 +34,34 @@ RUN wget \
 
 RUN conda --version
 
-COPY ./environment.yaml /app/environment.yaml
+COPY ./environment_flask.yaml /app/environment_flask.yaml
 
-RUN conda env create -f environment.yaml
-SHELL ["conda", "run", "-n", "ldm", "/bin/bash", "-c"]
+RUN conda env create -f environment_flask.yaml
+SHELL ["conda", "run", "-n", "llama_flask", "/bin/bash", "-c"]
 
 # add requirements
-COPY ./requirements.txt /app/requirements.txt
+#COPY ./requirements.txt /app/requirements.txt
 
 # install requirements
-RUN pip3 install -r requirements.txt
+#RUN pip3 install -r requirements.txt
 
 # install jax[cuda]
-RUN pip3 install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+#RUN pip3 install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
 # glid-3-xl models
-RUN mkdir -p glid_models
+#RUN mkdir -p glid_models
 
-RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
-    && wget https://dall-3.com/models/glid-3-xl/kl-f8.pt -O glid_models/kl-f8.pt \
-    && wget https://dall-3.com/models/glid-3-xl/finetune.pt -O glid_models/finetune.pt
+#RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
+#    && wget https://dall-3.com/models/glid-3-xl/kl-f8.pt -O glid_models/kl-f8.pt \
+#    && wget https://dall-3.com/models/glid-3-xl/finetune.pt -O glid_models/finetune.pt
 
 # SwinIR model
-RUN mkdir -p swinir_model
+#RUN mkdir -p swinir_model
 
 #RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/001_classicalSR_DF2K_s64w8_SwinIR-M_x8.pth -O swinir_model/swinir.pth
-RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth -O swinir_model/swinir.pth
+#RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth -O swinir_model/swinir.pth
 
-RUN pip install gunicorn
+#RUN pip install gunicorn
 
 # add source code
 COPY . /app
