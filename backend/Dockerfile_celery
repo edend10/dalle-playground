@@ -28,26 +28,10 @@ RUN wget \
 
 RUN conda --version
 
-COPY ./environment_dalle.yaml /app/environment_dalle.yaml
+COPY ./environment_sdm.yaml /app/environment_sdm.yaml
 
-RUN conda env create -f environment_dalle.yaml
+RUN conda env create -f environment_sdm.yaml
 SHELL ["conda", "run", "-n", "llama_dalle", "/bin/bash", "-c"]
-
-# add requirements
-#COPY ./requirements.txt /app/requirements.txt
-
-# install requirements
-#RUN pip3 install -r requirements.txt
-
-# install jax[cuda]
-RUN pip3 install --upgrade "jax[cuda]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-
-# glid-3-xl models
-RUN mkdir -p glid_models
-
-RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
-    && wget https://dall-3.com/models/glid-3-xl/kl-f8.pt -O glid_models/kl-f8.pt \
-    && wget https://dall-3.com/models/glid-3-xl/finetune.pt -O glid_models/finetune.pt
 
 # SwinIR model
 #RUN mkdir -p swinir_model

@@ -1,0 +1,36 @@
+name: llama_dalle
+channels:
+  - pytorch
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8.5
+  - pip=21.2.4
+  - cudatoolkit=11.6
+  - pytorch=1.12.1
+  - torchvision=0.13.1
+  - numpy=1.19.2
+  - pip:
+    - albumentations==0.4.3
+    - opencv-python==4.1.2.30
+    - pudb==2019.2
+    - imageio==2.9.0
+    - imageio-ffmpeg==0.4.2
+    - pytorch-lightning==1.5.10
+    - omegaconf==2.1.1
+    - test-tube>=0.7.5
+    - streamlit>=0.73.1
+    - einops==0.4.1
+    - torch-fidelity==0.3.0
+    - ftfy
+    - regex
+    - tqdm
+    - celery==5.2.3
+    - redis==4.1.4
+    - timm==0.4.12
+    - transformers==4.19.2
+    - torchmetrics==0.6.0
+    - kornia==0.6
+    - -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
+    - -e git+https://github.com/openai/CLIP.git@main#egg=clip
+    - -e git+https://github.com/edend10/stable-diffusion.git@main#egg=latent-diffusion

@@ -8,3 +8,4 @@
 *.jpeg
 *.jpg
 *.pt
+__pycache__
