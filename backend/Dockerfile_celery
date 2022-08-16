@@ -54,10 +54,13 @@ RUN wget https://dall-3.com/models/glid-3-xl/bert.pt -O glid_models/bert.pt \
 #RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/001_classicalSR_DF2K_s64w8_SwinIR-M_x8.pth -O swinir_model/swinir.pth
 #RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth -O swinir_model/swinir.pth
 
+## TODO: move to env.yaml
+RUN pip install eventlet
+
 # add source code
 COPY . /app
 
 # Model specific config
-RUN cp model_config_${DALLE_SIZE}.yaml model_config.yaml
+RUN cp celery_config_${DALLE_SIZE}.yaml celery_config.yaml
 
-CMD celery --app celery_tasks_dalle.celery worker --loglevel=info 2>&1 | tee logs.txt
+CMD celery --app celery_tasks_generate.celery worker -P eventlet --loglevel=info 2>&1 | tee logs.txt
