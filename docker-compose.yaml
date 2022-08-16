@@ -51,6 +51,7 @@ services:
       - APP_SETTINGS=celery.config.DevelopmentConfig
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - APP_BACKEND_URL=http://dalle-backend:8080
     deploy:
       resources:
         reservations:

@@ -13,11 +13,16 @@ from celery.signals import worker_init
 
 from dalle_model import DalleModel
 
+celery_backend_url = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379"),
+celery_broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
+app_backend_url = os.environ.get("APP_BACKEND_URL", "http://localhost:8080")
+
+TASK_COMPLETE_URL = f"{app_backend_url}/internal/generate-task-complete"
 
 celery = Celery(
 	__name__,
-	backend=os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379"),
-	broker=os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
+    backend=celery_backend_url,
+    broker=celery_broker_url
 )
 
 ## Adapted from https://towardsdatascience.com/serving-deep-learning-algorithms-as-a-service-6aa610368fde
@@ -39,8 +44,6 @@ celery.conf.update({
     'task_reject_on_worker_lost': True,
     'task_queue_max_priority': 10
 })
-
-TASK_COMPLETE_URL = "http://localhost:8080/internal/generate-task-complete"
 
 ## load model config
 with open("celery_config.yaml") as yamlfile:
@@ -78,7 +81,6 @@ def create_task_generate(prompt, num_images):
     generated_images = dalle_model.generate_images(prompt, num_images)
     for idx, img in enumerate(generated_images):
         print(f"Saving image idx: {idx}")
-#        img.save(f"{idx}.jpeg", format="jpeg")
 
 #    diffused_images = []
 #    for img in generated_images:
@@ -104,12 +106,18 @@ def create_task_generate(prompt, num_images):
 
     data = {"b64_images": encoded_images}
     serialized_data = json.dumps(data)
-    response = requests.post(url=TASK_COMPLETE_URL, data=serialized_data)
 
-    if response.status_code == 200:
-        print("Successfully notified task complete (200)")
-    else:
-        print(f"Failed to notify task complete (url: {TASK_COMPLETE_URL}, code: {response.status_code}): '{response.content}'")
-    
+    try:
+        response = requests.post(url=TASK_COMPLETE_URL, data=serialized_data)
+
+        if response.status_code == 200:
+            print("Successfully notified task complete (200)")
+        else:
+            print(f"Failed to notify task complete (url: {TASK_COMPLETE_URL}, code: {response.status_code}): '{response.content}'")
+            return False
+
+    except Exception as e:
+        print(f"Request to notify task complete failed with exception (url: {TASK_COMPLETE_URL}): {str(e)}'")
+        return False
 
     return True
