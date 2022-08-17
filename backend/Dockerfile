@@ -26,6 +26,9 @@ ARG PATH="/root/miniconda3/bin:$PATH"
 
 RUN apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
+## otherwise socketio doesn't work
+RUN apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && mkdir /root/.conda \
@@ -60,8 +63,6 @@ SHELL ["conda", "run", "-n", "llama_flask", "/bin/bash", "-c"]
 
 #RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/001_classicalSR_DF2K_s64w8_SwinIR-M_x8.pth -O swinir_model/swinir.pth
 #RUN wget https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/003_realSR_BSRGAN_DFOWMFC_s64w8_SwinIR-L_x4_GAN.pth -O swinir_model/swinir.pth
-
-#RUN pip install gunicorn
 
 # add source code
 COPY . /app

@@ -9,6 +9,6 @@ WORKER_TIMEOUT_MINUTES = 3
 # Gunicorn config
 bind = f"{ADDRESS}:{PORT}"
 #workers = multiprocessing.cpu_count() * 2 + 1
-workers = 2
+workers = 4
 threads = 2 * multiprocessing.cpu_count()
 timeout = 60 * WORKER_TIMEOUT_MINUTES

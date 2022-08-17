@@ -8,6 +8,7 @@ import time
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
+from flask_socketio import SocketIO, emit
 from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
@@ -17,6 +18,9 @@ celery_app = Celery('redis://redis:6379/0') ## TODO: parameterize
 
 app = Flask(__name__)
 CORS(app)
+## TODO: from env
+backend_socket = 
+socketio = SocketIO(app, cors_allowed_origins=[f"http://{backend_socket}:3000"])
 print("--> Starting DALL-E Server. This might take up to two minutes.")
 
 with open("app_config.yaml") as yamlfile:
@@ -30,8 +34,9 @@ def generate_images_api():
     json_data = request.get_json(force=True)
     text_prompt = json_data["text"]
     num_images = json_data["num_images"]
+    room_id = json_data["room_id"]
 
-    task_id = celery_app.send_task("create_task_generate", (text_prompt, num_images))
+    task_id = celery_app.send_task("create_task_generate", (text_prompt, num_images, room_id))
 
     generated_images = []	
 
@@ -54,27 +59,27 @@ def generate_task_complete():
     json_data = request.get_json(force=True)
     print("got request:", json_data)
     b64_images = json_data["b64_images"]
+    image_format = json_data["image_format"]
+    room_id = json_data["room_id"]
+
+    emit("generate_complete", {"data": {"b64_images": b64_images, "image_format": image_format}}, namespace="/", room=room_id)
 
     return f"got {len(b64_images)} images"
-	
 
-#with app.app_context():
-#    print(f"--> Loading model - DALL-E {model_version}")
-#    dalle_model = DalleModel(model_version)
-#    dalle_model.generate_images("warm-up", 1)
-#    print(f"--> Model loaded - DALL-E {model_version}")
-#    
-#    print(f"--> Loading models - glid")
-#    glid_params = glid.load_models(steps=100, skip_rate=0.6)
-#    print(f"--> Models loaded - glid")
-#    
-#    print(f"--> Loading model - swinir")
-#    swinir_model = swinir.load_model(is_real_sr=True)
-#    print(f"--> Model loaded - swinir")
-#    
-#    print("--> DALL-E Server is up and running!")
+### SocketIO
+@socketio.on("connect")
+def socket_connect():
+    emit('after connect', {'data': 'Connected'})
+
+@socketio.on("disconnect")
+def socket_disconnect():
+    emit('after disconnect', {'data': 'Disconnected'})
+
+@socketio.on("generate_complete")
+def socket_generate_complete():
+    print("generate_complete emitted")
 
 
 if __name__ == "__main__":
     print("flask main")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    socketio.run(host="0.0.0.0", port=port, debug=False)

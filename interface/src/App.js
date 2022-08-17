@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import io from 'socket.io-client';
+
 import withStyles from "@material-ui/core/styles/withStyles";
 import {
     Card, CardContent, FormControl, FormHelperText,
@@ -63,6 +65,7 @@ const useStyles = () => ({
 const NOTIFICATION_ICON = "https://camo.githubusercontent.com/95d3eed25e464b300d56e93644a26c8236a19e04572cf83a95c9d68f8126be83/68747470733a2f2f656d6f6a6970656469612d75732e73332e6475616c737461636b2e75732d776573742d312e616d617a6f6e6177732e636f6d2f7468756d62732f3234302f6170706c652f3238352f776f6d616e2d6172746973745f31663436392d323030642d31663361382e706e67";
 
 const App = ({ classes }) => {
+
     const [backendUrl, setBackendUrl] = useState('');
     const [promptText, setPromptText] = useState('');
     const [isFetchingImgs, setIsFetchingImgs] = useState(false);
@@ -80,16 +83,57 @@ const App = ({ classes }) => {
     const imagesPerQueryOptions = 10
     const validBackendUrl = isValidBackendEndpoint && backendUrl
 
+
+//    const socket = io("ws://" + backendUrl.replace("http://", "").replace("https://", ""));
+    const [socket, setSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState("");
+
+    useEffect(() => {
+        //TODO: from env
+        backendSocket = 
+        //TODO: move to call, close on response/error
+        const socket = io("ws://" + backendSocket + ":8080")
+        setSocket(socket)
+        socket.join(socket.id)
+
+        console.log(socket.rooms)
+        console.log(socket.io)
+        console.log(socket.id)
+
+        socket.on('connect', () => {
+          setIsConnected(true)
+        });
+
+        socket.on('disconnect', () => {
+          setIsConnected(false)
+        });
+        
+        socket.on('generate_complete', (data) => {
+            console.log("generate complete!")
+            console.log(data)
+            setGeneratedImages(data["b64_images"])
+            setGeneratedImagesFormat(data["image_format"])
+        });
+
+        return () => {
+          socket.off('connect')
+          socket.off('disconnect')
+          socket.off('generate_complete')
+          socket.close()
+        };
+    }, []);
+
+
     function enterPressedCallback(promptText) {
         console.log('API call to DALL-E web service with the following prompt [' + promptText + ']');
         setApiError('')
         setIsFetchingImgs(true)
-        callDalleService(backendUrl, promptText, imagesPerQuery).then((response) => {
+        callDalleService(backendUrl, promptText, imagesPerQuery, socket.id).then((response) => {
             setQueryTime(response['executionTime'])
             setGeneratedImages(response['serverResponse']['generatedImgs'])
             setGeneratedImagesFormat(response['serverResponse']['generatedImgsFormat'])
             setIsFetchingImgs(false)
-
+            
             if (notificationsOn) {
                 new Notification(
                     "Your DALL-E images are ready!",
@@ -129,6 +173,9 @@ const App = ({ classes }) => {
                 <Typography variant="h3">
                     DALL-E Playground <span role="img" aria-label="sparks-emoji">✨</span>
                 </Typography>
+            </div>
+            <div>
+                <p>Connected: { '' + isConnected }</p>
             </div>
 
             {!validBackendUrl && <div>

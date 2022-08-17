@@ -74,13 +74,11 @@ dalle_model = load_dalle_model(config["model_version"])
 ## TODO: load model and predict
 ## example: https://stackoverflow.com/questions/52098967/python-redis-queue-rq-how-to-avoid-preloading-ml-model-for-each-job
 @celery.task(name="create_task_generate")
-def create_task_generate(prompt, num_images):
+def create_task_generate(prompt, num_images, room_id):
 #    global dalle_model
 
     print(f"Predicting DALL-E for prompt: '{prompt}'")
     generated_images = dalle_model.generate_images(prompt, num_images)
-    for idx, img in enumerate(generated_images):
-        print(f"Saving image idx: {idx}")
 
 #    diffused_images = []
 #    for img in generated_images:
@@ -104,7 +102,7 @@ def create_task_generate(prompt, num_images):
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
         encoded_images.append(img_str)
 
-    data = {"b64_images": encoded_images}
+    data = {"b64_images": encoded_images, "image_format": config["img_format"], "room_id": room_id}
     serialized_data = json.dumps(data)
 
     try:
