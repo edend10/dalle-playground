@@ -27,7 +27,7 @@ ARG PATH="/root/miniconda3/bin:$PATH"
 RUN apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
 ## otherwise socketio doesn't work
-RUN apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
+RUN apt-get update && apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
 
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \

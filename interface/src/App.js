@@ -64,6 +64,9 @@ const useStyles = () => ({
 
 const NOTIFICATION_ICON = "https://camo.githubusercontent.com/95d3eed25e464b300d56e93644a26c8236a19e04572cf83a95c9d68f8126be83/68747470733a2f2f656d6f6a6970656469612d75732e73332e6475616c737461636b2e75732d776573742d312e616d617a6f6e6177732e636f6d2f7468756d62732f3234302f6170706c652f3238352f776f6d616e2d6172746973745f31663436392d323030642d31663361382e706e67";
 
+const socketBackend = "35.184.104.157"
+const socket = io("ws://" + socketBackend + ":8080", {transports: ['websocket']})
+
 const App = ({ classes }) => {
 
     const [backendUrl, setBackendUrl] = useState('');
@@ -83,68 +86,51 @@ const App = ({ classes }) => {
     const imagesPerQueryOptions = 10
     const validBackendUrl = isValidBackendEndpoint && backendUrl
 
-
 //    const socket = io("ws://" + backendUrl.replace("http://", "").replace("https://", ""));
-    const [socket, setSocket] = useState(null);
-    const [isConnected, setIsConnected] = useState("");
+    const [isSocketConnected, setIsSocketConnected] = useState("");
+    const [socketIds, setSocketIds] = useState("");
+    const [generateComplete, setGenerateComplete] = useState(0);
 
     useEffect(() => {
-        //TODO: from env
-        backendSocket = 
-        //TODO: move to call, close on response/error
-        const socket = io("ws://" + backendSocket + ":8080")
-        setSocket(socket)
-        socket.join(socket.id)
-
-        console.log(socket.rooms)
-        console.log(socket.io)
-        console.log(socket.id)
-
         socket.on('connect', () => {
-          setIsConnected(true)
+          setIsSocketConnected("true")
+          setSocketIds(socketIds + ", " + socket.id)
         });
 
         socket.on('disconnect', () => {
-          setIsConnected(false)
+          console.log("Socket" + socket.id + "disconnected")
+          setIsSocketConnected("false")
         });
-        
-        socket.on('generate_complete', (data) => {
+
+        socket.on('generate_complete', (response) => {
+            setGenerateComplete(generateComplete + 1)
             console.log("generate complete!")
-            console.log(data)
-            setGeneratedImages(data["b64_images"])
-            setGeneratedImagesFormat(data["image_format"])
+            console.log(response)
+            //setQueryTime(response['execution_time'])
+            setGeneratedImages(response['data']['b64_images'])
+            setGeneratedImagesFormat(response['data']['image_format'])
+            setIsFetchingImgs(false)
         });
 
         return () => {
-          socket.off('connect')
-          socket.off('disconnect')
-          socket.off('generate_complete')
-          socket.close()
-        };
-    }, []);
+            socket.off('connect')
+            socket.off('disconnect')
+            socket.off('generate_complete')
+            socket.close()
+        }
+    //from: https://socket.io/how-to/use-with-react-hooks
+    //the 2nd argument of the useEffect() method must be [], or else the hook will be triggered every time a new message arrives
+    }, [])
 
-
-    function enterPressedCallback(promptText) {
-        console.log('API call to DALL-E web service with the following prompt [' + promptText + ']');
+    function callModel(connectedSocketId) {
         setApiError('')
-        setIsFetchingImgs(true)
-        callDalleService(backendUrl, promptText, imagesPerQuery, socket.id).then((response) => {
-            setQueryTime(response['executionTime'])
-            setGeneratedImages(response['serverResponse']['generatedImgs'])
-            setGeneratedImagesFormat(response['serverResponse']['generatedImgsFormat'])
-            setIsFetchingImgs(false)
-            
-            if (notificationsOn) {
-                new Notification(
-                    "Your DALL-E images are ready!",
-                    {
-                        body: `Your generations for "${promptText}" are ready to view`,
-                        icon: NOTIFICATION_ICON,
-                    },
-                )
-            }
+        setIsFetchingImgs(false)//TODO: true
+        callDalleService(backendUrl, promptText, imagesPerQuery, connectedSocketId).then((response) => {
+            console.log("Successful http call")
+            console.log(response)
         }).catch((error) => {
             console.log('Error querying DALL-E service.', error)
+
             if (error.message === 'Timeout') {
                 setApiError('Timeout querying DALL-E service (>1min). Consider reducing the images per query or use a stronger backend.')
             } else {
@@ -152,6 +138,12 @@ const App = ({ classes }) => {
             }
             setIsFetchingImgs(false)
         })
+    }
+
+    function enterPressedCallback(promptText) {
+        console.log('API call to DALL-E web service with the following prompt [' + promptText + ']');
+        console.log("v7")
+        callModel(socket.id)
     }
 
     function getGalleryContent() {
@@ -175,7 +167,7 @@ const App = ({ classes }) => {
                 </Typography>
             </div>
             <div>
-                <p>Connected: { '' + isConnected }</p>
+                <p>Connected: { '' + isSocketConnected + ' (' + generateComplete + '): ' + socketIds }</p>
             </div>
 
             {!validBackendUrl && <div>

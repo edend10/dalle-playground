@@ -8,7 +8,7 @@ import time
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room
 from consts import DEFAULT_IMG_OUTPUT_DIR
 from utils import parse_arg_boolean, parse_arg_dalle_version
 from consts import ModelSize
@@ -17,10 +17,12 @@ from celery import Celery
 celery_app = Celery('redis://redis:6379/0') ## TODO: parameterize
 
 app = Flask(__name__)
-CORS(app)
 ## TODO: from env
-backend_socket = 
-socketio = SocketIO(app, cors_allowed_origins=[f"http://{backend_socket}:3000"])
+frontend_ip = "35.184.104.157"
+
+frontend_url = f"http://{frontend_ip}:3000"
+CORS(app, origins=[frontend_url])
+socketio = SocketIO(app, cors_allowed_origins=[frontend_url], engineio_logger=True)
 print("--> Starting DALL-E Server. This might take up to two minutes.")
 
 with open("app_config.yaml") as yamlfile:
@@ -42,7 +44,7 @@ def generate_images_api():
 
     returned_generated_images = []
     
-    print(f"Created {num_images} images from text prompt [{text_prompt}]")
+    print(f"Submitted task for {num_images} images from text prompt [{text_prompt}]")
     
     response = {'generatedImgs': returned_generated_images,
     'generatedImgsFormat': "bla"}
@@ -57,12 +59,13 @@ def health_check():
 @app.route("/internal/generate-task-complete", methods=["POST"])
 def generate_task_complete():
     json_data = request.get_json(force=True)
-    print("got request:", json_data)
+    print("got request:", {k: [x[:30] for x in v] if type(v) == list else v for k,v in json_data.items()})
     b64_images = json_data["b64_images"]
     image_format = json_data["image_format"]
     room_id = json_data["room_id"]
 
     emit("generate_complete", {"data": {"b64_images": b64_images, "image_format": image_format}}, namespace="/", room=room_id)
+    print(f"emitted event for room_id: {room_id}")
 
     return f"got {len(b64_images)} images"
 
