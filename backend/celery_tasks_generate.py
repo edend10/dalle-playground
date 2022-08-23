@@ -12,6 +12,7 @@ from celery import Celery
 from celery.signals import worker_init
 
 from dalle_model import DalleModel
+from flask_socketio import SocketIO, emit
 
 celery_backend_url = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379"),
 celery_broker_url = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
@@ -24,6 +25,8 @@ celery = Celery(
     backend=celery_backend_url,
     broker=celery_broker_url
 )
+
+socketio = SocketIO(message_queue=celery_broker_url)
 
 ## Adapted from https://towardsdatascience.com/serving-deep-learning-algorithms-as-a-service-6aa610368fde
 celery.conf.update({
@@ -104,18 +107,19 @@ def create_task_generate(prompt, num_images, room_id):
 
     data = {"b64_images": encoded_images, "image_format": config["img_format"], "room_id": room_id}
     serialized_data = json.dumps(data)
+    socketio.emit("generate_complete", {"data": {"b64_images": encoded_images, "image_format": config["img_format"]}}, namespace="/", to=room_id)
 
-    try:
-        response = requests.post(url=TASK_COMPLETE_URL, data=serialized_data)
-
-        if response.status_code == 200:
-            print("Successfully notified task complete (200)")
-        else:
-            print(f"Failed to notify task complete (url: {TASK_COMPLETE_URL}, code: {response.status_code}): '{response.content}'")
-            return False
-
-    except Exception as e:
-        print(f"Request to notify task complete failed with exception (url: {TASK_COMPLETE_URL}): {str(e)}'")
-        return False
+#    try:
+#        response = requests.post(url=TASK_COMPLETE_URL, data=serialized_data)
+#
+#        if response.status_code == 200:
+#            print("Successfully notified task complete (200)")
+#        else:
+#            print(f"Failed to notify task complete (url: {TASK_COMPLETE_URL}, code: {response.status_code}): '{response.content}'")
+#            return False
+#
+#    except Exception as e:
+#        print(f"Request to notify task complete failed with exception (url: {TASK_COMPLETE_URL}): {str(e)}'")
+#        return False
 
     return True
