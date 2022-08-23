@@ -1,4 +1,6 @@
 ## Adapted from: https://testdriven.io/blog/flask-and-celery/
+from torch import autocast
+from diffusers import StableDiffusionPipeline
 
 import os
 import time
@@ -11,7 +13,6 @@ import requests
 from celery import Celery
 from celery.signals import worker_init
 
-from dalle_model import DalleModel
 from flask_socketio import SocketIO, emit
 
 celery_backend_url = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379"),
@@ -59,11 +60,12 @@ def load_dalle_model(model_version):
 	os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 	print(f"--> Loading model - DALL-E {model_version}")
-	dalle_model = DalleModel(model_version)
+	dalle_model = StableDiffusionPipeline.from_pretrained(
+        "CompVis/stable-diffusion-v1-4", 
+        use_auth_token="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"
+    ).to("cuda")
+
 	print(f"--> Model loaded - DALL-E {model_version}")
-	print("--> Generating warmup images for DALL-E")
-	dalle_model.generate_images("warm-up", 1)
-	print("--> Model warmup done")
 
 	return dalle_model
 
@@ -81,7 +83,9 @@ def create_task_generate(prompt, num_images, room_id):
 #    global dalle_model
 
     print(f"Predicting DALL-E for prompt: '{prompt}'")
-    generated_images = dalle_model.generate_images(prompt, num_images)
+    with autocast("cuda"):
+        generated_images = [dalle_model(prompt)["sample"][0]]
+    print("created image!!!")
 
 #    diffused_images = []
 #    for img in generated_images:
